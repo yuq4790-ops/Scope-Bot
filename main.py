@@ -436,9 +436,9 @@ async def on_message(message):
 
 
 
-bot.tree.command(name="userlookup", description="get info from user")
+@bot.tree.command(name="userlookup", description="get info from user")
 async def userlookup(interaction: discord.Interaction, userid: str):
-        try:
+    try:
         user = await bot.fetch_user(int(userid))
 
         embed = discord.Embed(
@@ -448,33 +448,31 @@ async def userlookup(interaction: discord.Interaction, userid: str):
 
         embed.set_thumbnail(url=user.display_avatar.url)
 
-
         embed.add_field(name="Username", value=user.name, inline=True)
         embed.add_field(name="ID", value=user.id, inline=True)
         embed.add_field(name="Bot", value="Yes" if user.bot else "No", inline=True)
+
         embed.add_field(
             name="Account Created",
             value=f"<t:{int(user.created_at.timestamp())}:F>",
             inline=False
         )
-        embed.add.field(
+
+        embed.add_field(
             name="Nitro",
             value="Yes" if get_nitro_status(user) else "No",
-            Inline=False
-
+            inline=False
         )
 
         await interaction.response.send_message(embed=embed)
 
     except Exception as e:
         print(e)
+
         await interaction.response.send_message(
             "User not found or invalid id!",
             ephemeral=True
         )
-
-
-   await interaction.response.send_message(embed=embed)
     
 
 #bot run ---------------------------------------------------
