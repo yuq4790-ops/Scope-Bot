@@ -631,6 +631,22 @@ async def rblxlookup(interaction: discord.Interaction, username: str):
 
         avatar_url = avatar["data"][0]["imageUrl"]
 
+        # Followers
+        followers = requests.get(
+            f"https://friends.roblox.com/v1/users/{user_id}/followers/count"
+        ).json()
+
+        # Following
+        following = requests.get(
+            f"https://friends.roblox.com/v1/users/{user_id}/followings/count"
+        ).json()
+
+        # Friends
+        friends = requests.get(
+            f"https://friends.roblox.com/v1/users/{user_id}/friends/count"
+        ).json()
+
+        # Embed
         embed = create_embed(
             title=f"Roblox Lookup - {user_info['name']}",
             description="Roblox User Information",
@@ -658,21 +674,45 @@ async def rblxlookup(interaction: discord.Interaction, username: str):
         )
 
         embed.add_field(
-            name="Created",
-            value=user_info["created"],
-            inline=False
-        )
-
-        embed.add_field(
-            name="Description",
-            value=user_info["description"] or "No Bio",
-            inline=False
+            name="Verified",
+            value="Yes" if user_info["hasVerifiedBadge"] else "No",
+            inline=True
         )
 
         embed.add_field(
             name="Banned",
             value="Yes" if user_info["isBanned"] else "No",
             inline=True
+        )
+
+        embed.add_field(
+            name="Created",
+            value=user_info["created"],
+            inline=False
+        )
+
+        embed.add_field(
+            name="Followers",
+            value=followers["count"],
+            inline=True
+        )
+
+        embed.add_field(
+            name="Following",
+            value=following["count"],
+            inline=True
+        )
+
+        embed.add_field(
+            name="Friends",
+            value=friends["count"],
+            inline=True
+        )
+
+        embed.add_field(
+            name="Bio",
+            value=user_info["description"] or "No Bio",
+            inline=False
         )
 
         await interaction.followup.send(embed=embed)
