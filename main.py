@@ -439,12 +439,12 @@ async def on_message(message):
 @bot.tree.command(name="userlookup", description="Get info from user")
 async def userlookup(interaction: discord.Interaction, user: discord.User):
 
-    embed = discord.Embed(
+    embed = create_embed(
         title=f"User Lookup - {user}",
-        color=discord.Color.dark_gray()
+        description="User Information",
+        user=user,
+        color=0x000370
     )
-
-    embed.set_thumbnail(url=user.display_avatar.url)
 
     embed.add_field(name="Username", value=user.name, inline=True)
     embed.add_field(name="ID", value=user.id, inline=True)
@@ -456,7 +456,8 @@ async def userlookup(interaction: discord.Interaction, user: discord.User):
         inline=False
     )
 
-    await interaction.followup.send(embed=embed)
+    await interaction.response.send_message(embed=embed)
+    
     
 
 #bot run ---------------------------------------------------
