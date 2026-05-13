@@ -456,7 +456,7 @@ async def userlookup(interaction: discord.Interaction, user: discord.User):
         inline=False
     )
 
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
     
 
 #bot run ---------------------------------------------------
