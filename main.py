@@ -447,30 +447,145 @@ async def userlookup(interaction: discord.Interaction, userid: str):
 
         embed = create_embed(
             title=f"User Lookup - {user}",
-            description="User Information",
+            description="Advanced User Information",
             user=user,
             color=0x000370
         )
 
+        # Full user object for banner etc.
+        full_user = await bot.fetch_user(user.id)
+
+        # Nitro Check
+        nitro = "Yes" if user.avatar and user.avatar.is_animated() else "No"
+
+        # Animated Avatar
+        animated_avatar = "Yes" if user.avatar and user.avatar.is_animated() else "No"
+
+        # Mutual Servers
+        mutuals = len([g for g in bot.guilds if g.get_member(user.id)])
+
+        # Account Age
+        days_old = (datetime.utcnow() - user.created_at.replace(tzinfo=None)).days
+
+        # Badges
+        badges = []
+
+        flags = user.public_flags
+
+        if flags.staff:
+            badges.append("Discord Staff")
+
+        if flags.partner:
+            badges.append("Partner")
+
+        if flags.hypesquad:
+            badges.append("HypeSquad")
+
+        if flags.bug_hunter:
+            badges.append("Bug Hunter")
+
+        if flags.verified_bot:
+            badges.append("Verified Bot")
+
+        if flags.active_developer:
+            badges.append("Active Developer")
+
+        badge_text = ", ".join(badges) if badges else "None"
+
+        # Fields
         embed.add_field(name="Username", value=user.name, inline=True)
-        embed.add_field(name="ID", value=user.id, inline=True)
-        embed.add_field(name="Bot", value="Yes" if user.bot else "No", inline=True)
 
         embed.add_field(
-            name="Account Created",
+            name="Display Name",
+            value=user.display_name,
+            inline=True
+        )
+
+        embed.add_field(name="ID", value=user.id, inline=True)
+
+        embed.add_field(
+            name="Mention",
+            value=user.mention,
+            inline=True
+        )
+
+        embed.add_field(
+            name="Bot",
+            value="Yes" if user.bot else "No",
+            inline=True
+        )
+
+        embed.add_field(
+            name="Nitro",
+            value=nitro,
+            inline=True
+        )
+
+        embed.add_field(
+            name="Badges",
+            value=badge_text,
+            inline=False
+        )
+
+        embed.add_field(
+            name="Created At",
             value=f"<t:{int(user.created_at.timestamp())}:F>",
             inline=False
         )
 
+        embed.add_field(
+            name="Account Age",
+            value=f"{days_old} days",
+            inline=True
+        )
+
+        embed.add_field(
+            name="Mutual Servers",
+            value=str(mutuals),
+            inline=True
+        )
+
+        embed.add_field(
+            name="Animated Avatar",
+            value=animated_avatar,
+            inline=True
+        )
+
+        embed.add_field(
+            name="Avatar Download",
+            value=f"[Download Avatar]({user.display_avatar.url})",
+            inline=False
+        )
+
+        # Banner
+        if full_user.banner:
+
+            embed.add_field(
+                name="Banner Download",
+                value=f"[Download Banner]({full_user.banner.url})",
+                inline=False
+            )
+
+            embed.set_image(url=full_user.banner.url)
+
+        # Accent Color
+        if full_user.accent_color:
+
+            embed.add_field(
+                name="Accent Color",
+                value=str(full_user.accent_color),
+                inline=True
+            )
+
         await interaction.followup.send(embed=embed)
 
-    except:
+    except Exception as e:
+        print(e)
+
         await interaction.followup.send(
             "User not found or invalid ID.",
             ephemeral=True
         )
-    
-    
 
 #bot run ---------------------------------------------------
 bot.run(TOKEN)
