@@ -436,27 +436,39 @@ async def on_message(message):
 
 
 
-@bot.tree.command(name="userlookup", description="Get info from user")
-async def userlookup(interaction: discord.Interaction, user: discord.User):
+@bot.tree.command(name="userlookup", description="Lookup a user by ID")
+@app_commands.describe(userid="Discord User ID")
+async def userlookup(interaction: discord.Interaction, userid: str):
 
-    embed = create_embed(
-        title=f"User Lookup - {user}",
-        description="User Information",
-        user=user,
-        color=0x000370
-    )
+    await interaction.response.defer()
 
-    embed.add_field(name="Username", value=user.name, inline=True)
-    embed.add_field(name="ID", value=user.id, inline=True)
-    embed.add_field(name="Bot", value="Yes" if user.bot else "No", inline=True)
+    try:
+        user = await bot.fetch_user(int(userid))
 
-    embed.add_field(
-        name="Account Created",
-        value=f"<t:{int(user.created_at.timestamp())}:F>",
-        inline=False
-    )
+        embed = create_embed(
+            title=f"User Lookup - {user}",
+            description="User Information",
+            user=user,
+            color=0x000370
+        )
 
-    await interaction.response.send_message(embed=embed)
+        embed.add_field(name="Username", value=user.name, inline=True)
+        embed.add_field(name="ID", value=user.id, inline=True)
+        embed.add_field(name="Bot", value="Yes" if user.bot else "No", inline=True)
+
+        embed.add_field(
+            name="Account Created",
+            value=f"<t:{int(user.created_at.timestamp())}:F>",
+            inline=False
+        )
+
+        await interaction.followup.send(embed=embed)
+
+    except:
+        await interaction.followup.send(
+            "User not found or invalid ID.",
+            ephemeral=True
+        )
     
     
 
