@@ -1,5 +1,6 @@
 import discord
 import os
+import requests
 from discord.ext import commands, tasks
 from discord import app_commands
 from datetime import datetime, timedelta
@@ -434,7 +435,7 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-
+#DC USER LOOK UP ----------------------------------------------------------------
 
 @bot.tree.command(name="userlookup", description="Lookup a user by ID")
 @app_commands.describe(userid="Discord User ID")
@@ -584,6 +585,103 @@ async def userlookup(interaction: discord.Interaction, userid: str):
 
         await interaction.followup.send(
             "User not found or invalid ID.",
+            ephemeral=True
+        )
+
+
+
+#RBX USER LOOK UP INFO ´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
+
+@bot.tree.command(name="rblxlookup", description="Lookup a Roblox User")
+@app_commands.describe(username="Roblox Username")
+async def rblxlookup(interaction: discord.Interaction, username: str):
+
+    await interaction.response.defer()
+
+    try:
+
+        # Username -> User ID
+        response = requests.post(
+            "https://users.roblox.com/v1/usernames/users",
+            json={
+                "usernames": [username],
+                "excludeBannedUsers": False
+            }
+        )
+
+        data = response.json()
+
+        if not data["data"]:
+            await interaction.followup.send("User not found.")
+            return
+
+        user_data = data["data"][0]
+
+        user_id = user_data["id"]
+
+        # Full User Info
+        user_info = requests.get(
+            f"https://users.roblox.com/v1/users/{user_id}"
+        ).json()
+
+        # Avatar
+        avatar = requests.get(
+            f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={user_id}&size=420x420&format=Png&isCircular=false"
+        ).json()
+
+        avatar_url = avatar["data"][0]["imageUrl"]
+
+        embed = create_embed(
+            title=f"Roblox Lookup - {user_info['name']}",
+            description="Roblox User Information",
+            color=0x000370
+        )
+
+        embed.set_thumbnail(url=avatar_url)
+
+        embed.add_field(
+            name="Username",
+            value=user_info["name"],
+            inline=True
+        )
+
+        embed.add_field(
+            name="Display Name",
+            value=user_info["displayName"],
+            inline=True
+        )
+
+        embed.add_field(
+            name="User ID",
+            value=user_id,
+            inline=True
+        )
+
+        embed.add_field(
+            name="Created",
+            value=user_info["created"],
+            inline=False
+        )
+
+        embed.add_field(
+            name="Description",
+            value=user_info["description"] or "No Bio",
+            inline=False
+        )
+
+        embed.add_field(
+            name="Banned",
+            value="Yes" if user_info["isBanned"] else "No",
+            inline=True
+        )
+
+        await interaction.followup.send(embed=embed)
+
+    except Exception as e:
+        print(e)
+
+        await interaction.followup.send(
+            "Error while looking up Roblox user.",
             ephemeral=True
         )
 
